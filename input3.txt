@@ -1,0 +1,10 @@
+int main ( a, b ) 
+{ 
+int c; 
+c = 0;
+WHILE 3 > c 
+{
+int a;
+c = c + 1;
+}
+}
