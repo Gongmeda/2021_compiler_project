@@ -1,16 +1,27 @@
-# This is a sample Python script.
+import sys
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+from scanner import Scanner
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    # 명령어 입력 오류 체크
+    if len(sys.argv) != 2:
+        sys.exit("Usage: Compiler2021 <input_file_name>")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    with open(f'./{sys.argv[1]}', 'r') as file:
+        code = file.read()
+
+    # Lexical analyzer (Scanner)
+    scanner = Scanner(code)
+    scanner.print_tokens()
+
+    # Syntax Analyzer (Parser)
+        # LR-Parser vs LL-Parser
+        # parser table
+        # AST
+
+    # Semantic Analyzer
+
+    # Intermediate Code Generator
+    # Code Generator
+
+
