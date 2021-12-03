@@ -1,6 +1,21 @@
-int main ( a, b ) 
-{
-int c;
-c = 2;
-c = c + 4;
+main() {
+  int apple;
+  int bread;
+  int chocolate;
+
+  apple = 0;
+  bread = 1;
+  chocolate = 100;
+
+  IF chocolate > apple + bread {
+    int dimsum;
+
+    dimsum = bread * bread;
+    apple = apple + dimsum;
+    bread = bread + 1;
+  }
+
+  IF apple > 100 THEN
+  { apple = 100; }
+  ELSE { EXIT 0; }
 }

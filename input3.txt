@@ -1,10 +1,17 @@
 int main ( a, b ) 
 { 
-int c; 
-c = 0;
-WHILE 3 > c 
-{
-int a;
-c = c + 1;
-}
+	int c; 
+	c = 1;
+	IF 5<c THEN
+	{
+		int a;
+		a = c + 1;
+		c = a;
+	}
+	ELSE 
+	{
+		int d;
+	    d=3*4+5*6;
+	    c=c+d;
+	}
 }
