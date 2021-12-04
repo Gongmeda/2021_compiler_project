@@ -1,4 +1,4 @@
-int main ( a, b ) 
+main ()
 { 
 	int c; 
 	c = 1;

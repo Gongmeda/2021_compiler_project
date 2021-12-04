@@ -1,4 +1,4 @@
-int main ()
+main ()
 { 
 int c; 
 c = 5*6+2*3;

@@ -1,5 +1,5 @@
+import sys
 from enum import Enum, auto
-
 from tokentype import TokenType
 
 
@@ -48,6 +48,8 @@ class Scanner:
                     self.add_token(TokenType.OPERATOR, c)
                 elif c in [';']:
                     self.add_token(TokenType.SEMICOLON, c)
+                elif c not in [' ', '\n', '\t']:
+                    sys.exit(f"Scanner Error: Undefined Character {c.encode()}")
 
     def consume_alpha(self):
         word = ''.join(self.buffer)
@@ -67,5 +69,7 @@ class Scanner:
         self.buffer.clear()
 
     def print_tokens(self):
+        print("==== GENERATED TOKENS ====")
         for t in self.tokens:
             print(f"<{t[0].name}, '{t[1]}'>")
+        print()
