@@ -1,6 +1,9 @@
 import sys
 
+from parser import Parser
 from scanner import Scanner
+
+GRAMMAR_PATH = "grammar.txt"
 
 
 def main():
@@ -16,9 +19,16 @@ def main():
     scanner.print_tokens()
 
     # Syntax Analyzer (Parser)
-    # LR-Parser vs LL-Parser
-    # parser table
-    # AST
+    parser = Parser(scanner.tokens, GRAMMAR_PATH)
+    parser.print_grammar()
+    # LL-Parser
+        # FIRST & FOLLOW 구하기
+        # make LL Grammar
+            # 모호성 해결
+            # left-factoring
+            # left-recursion 제거
+        # parsing table 생성
+        # AST 생성
 
     # Semantic Analyzer
 
