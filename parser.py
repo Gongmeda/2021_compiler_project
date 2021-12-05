@@ -1,18 +1,4 @@
 import sys
-from itertools import zip_longest
-
-
-def find_prefixes(lists):
-    zipped = zip_longest(*lists, fillvalue='')
-    for index, letters in enumerate(zipped):
-        if index == 0:
-            prefixes = letters  # assumes there will always be a prefix
-        else:
-            poss_prefixes = [prefix + letters[i] for i, prefix in enumerate(prefixes)]
-            prefixes = [prefix if poss_prefixes.count(prefix) == letters.count(
-                prefix)  # changed > 1 to == letters.count(prefix)
-                        else prefixes[i] for i, prefix in enumerate(poss_prefixes)]
-    return set(prefixes)
 
 
 # LL(1) Parser
