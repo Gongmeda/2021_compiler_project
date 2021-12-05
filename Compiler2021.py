@@ -1,6 +1,6 @@
 import sys
 
-from parser import Parser
+from parser import LLParser as Parser
 from scanner import Scanner
 
 GRAMMAR_PATH = "grammar.txt"
@@ -16,7 +16,7 @@ def main():
 
     # Lexical analyzer (Scanner)
     scanner = Scanner(code)
-    scanner.print_tokens()
+    # scanner.print_tokens()
 
     # Syntax Analyzer (Parser)
     parser = Parser(scanner.tokens, GRAMMAR_PATH)
