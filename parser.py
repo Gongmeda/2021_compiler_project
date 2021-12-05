@@ -19,7 +19,11 @@ class LLParser:
                 rules.pop(-1)
                 for r in rules:
                     key, value = map(str.strip, r.split('::='))
-                    grammar[key] = list(map(str.split, (map(str.strip, value.split('|')))))
+                    exps = [e.split() for e in list(map(str.strip, value.split('|')))]
+                    for i in range(len(exps)):
+                        if exps[i] == []:
+                            exps[i] = ['']
+                    grammar[key] = exps
         except IOError:
             sys.exit("Parser Error: invalid grammar file path")
 
@@ -70,7 +74,43 @@ class LLParser:
 
         return grammar
 
-    def remove_left_recursion(self, grammar):
+    def remove_left_recursion(self, grammar: dict):
+        keys = list(grammar.keys())
+        for i in range(len(keys)):
+            for j in range(i):
+                extended = []
+                for k in range(len(grammar[keys[i]])):
+                    if len(grammar[keys[i]][k]) > 0 and grammar[keys[i]][k][0] == keys[j]:
+                        for l in range(len(grammar[keys[j]])):
+                            extended.append(grammar[keys[j]][l] + grammar[keys[i]][k][1:])
+                    elif len(grammar[keys[i]][k]) > 0:
+                        extended.append(grammar[keys[i]][k])
+                grammar[keys[i]] = extended
+            has_direct_rec = False
+            for k in range(len(grammar[keys[i]])):
+                if len(grammar[keys[i]][k]) > 0 and grammar[keys[i]][k][0] == keys[i]:
+                    has_direct_rec = True
+                    break
+            if has_direct_rec:
+                helper_name = keys[i] + "'"
+                while helper_name in grammar:
+                    helper_name = helper_name + "'"
+                grammar[helper_name] = []
+                j = 0
+                for k in range(len(grammar[keys[i]])):
+                    if len(grammar[keys[i]][k]) > 0:
+                        if grammar[keys[i]][k][0] == keys[i]:
+                            grammar[helper_name].append(grammar[keys[i]][k][1:] + [helper_name])
+                        else:
+                            if len(grammar[keys[i]][k]) == 1 and grammar[keys[i]][k][0] == '':
+                                grammar[keys[i]][k] = [helper_name]
+                            else:
+                                grammar[keys[i]][k].append(helper_name)
+                            grammar[keys[i]][j] = grammar[keys[i]][k]
+                            j = j + 1
+                grammar[keys[i]] = grammar[keys[i]][:j]
+                grammar[helper_name].append([])
+
         return grammar
 
     def print_grammar(self):
