@@ -285,34 +285,6 @@ class LLParser:
             follow[k].sort()
         return follow
 
-    # def calc_follow(self, k):
-    #     follow = []
-    #     if k == 'prog':
-    #         follow.append('$')
-    #
-    #     for kk, kv in self.grammar.items():
-    #         for i in range(len(kv)):
-    #             if k in kv[i]:
-    #                 idx = kv[i].index(k)
-    #                 if idx != len(kv[i]) - 1:
-    #                     if kv[i][idx + 1] in self.terminals:
-    #                         follow.append(kv[i][idx + 1])
-    #                     else:
-    #                         first = self.first[kv[i][idx + 1]].copy()
-    #                         if '' not in first:
-    #                             follow.extend(first)
-    #                         else:
-    #                             first.remove('')
-    #                             follow.extend(list(first) + self.calc_follow(kk))
-    #                 else:
-    #                     if k != kk:
-    #                         follow.extend(self.calc_follow(kk))
-    #                     else:
-    #                         continue
-    #             else:
-    #                 continue
-    #     return follow
-
     def print_first_follow(self):
         first_len = 35
         follow_len = 35
