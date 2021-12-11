@@ -16,12 +16,13 @@ def main():
 
     # Lexical analyzer (Scanner)
     scanner = Scanner(code)
-    # scanner.print_tokens()
+    scanner.print_tokens()
 
     # Syntax Analyzer (Parser)
     parser = Parser(scanner.tokens, GRAMMAR_PATH)
     parser.print_grammar()
     parser.print_first_follow()
+    parser.print_parsing_table()
     # LL-Parser
         # make LL Grammar - 모호성 해결
             # left-factoring

@@ -2,6 +2,9 @@ import sys
 
 
 # LL(1) Parser
+from copy import deepcopy
+
+
 class LLParser:
     def __init__(self, tokens, grammar_path):
         self.tokens = tokens
@@ -11,7 +14,7 @@ class LLParser:
         self.nullable = self.find_nullable()
         self.first = self.find_first()
         self.follow = self.find_follow()
-        self.parsing_table = None
+        self.parsing_table = self.create_parsing_table()
 
     def parse_grammar(self, grammar_path):
         # 문법 파일 파싱
@@ -125,7 +128,8 @@ class LLParser:
 
     def print_grammar(self):
         print("==== PARSED LL GRAMMAR ====")
-        for k, kv in self.grammar.items():
+        grammar = deepcopy(self.grammar)
+        for k, kv in grammar.items():
             for i in range(len(kv)):
                 for j in range(len(kv[i])):
                     if kv[i][j] in ['{', '}', '(', ')', ';', '+', '*', '<', '=']:
@@ -299,4 +303,44 @@ class LLParser:
             follow = sorted(list(self.follow[k]))
             print(f"{k:<10} | {'True' if self.nullable[k] else 'False':<10} "
                   f"| {', '.join(first):<{first_len}} | {', '.join(follow):<{follow_len}}")
+        print()
+
+    def create_parsing_table(self):
+        self.terminals.remove('')
+        self.terminals.append('$')
+        nonterminals = self.nonterminals
+        terminals = self.terminals
+        table = [[[] for j in range(len(terminals))] for i in range(len(nonterminals))]
+
+        for k, v in self.grammar.items():
+            k_idx = nonterminals.index(k)
+            for t in v:
+                # print(k, t)
+                if t == ['']:      # ε - check follow
+                    for f in self.follow[k]:
+                        table[k_idx][terminals.index(f)] = ['']
+                else:           # other - check first
+                    for f in self.first[k]:
+                        if f == '':
+                            continue
+                        f_idx = terminals.index(f)
+                        if t[0] in terminals:
+                            if t[0] == terminals[f_idx]:
+                                table[k_idx][f_idx] = t
+                        else:
+                            table[k_idx][f_idx] = t
+
+        return table
+
+    def print_parsing_table(self):
+        trans_len = 20
+        print("==== PARSING TABLE ====")
+        print(f"{'':<10}", end='')
+        for t in range(len(self.terminals)):
+            print(f" | {self.terminals[t]:<{trans_len}}", end='')
+        print()
+        print(f"{' | '.join(['-' * 10] + ['-' * trans_len] * len(self.terminals))}")
+        for n in range(len(self.nonterminals)):
+            row = [f"{' '.join(self.parsing_table[n][t]) if self.parsing_table[n][t] != [''] else 'ε':<{trans_len}}" for t in range(len(self.terminals))]
+            print(f"{self.nonterminals[n]:<10} | {' | '.join(row)}")
         print()
