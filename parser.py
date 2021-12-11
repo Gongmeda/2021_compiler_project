@@ -160,7 +160,7 @@ class LLParser:
                     for j in v[i]:
                         if j not in self.nonterminals:
                             terminal.append(j)
-        return list(set(terminal))
+        return sorted(list(set(terminal)))
 
     def find_nullable(self):
         keys = self.nonterminals
@@ -320,14 +320,14 @@ class LLParser:
                     for f in self.follow[k]:
                         table[k_idx][terminals.index(f)] = ['']
                 else:           # other - check first
-                    for f in self.first[k]:
-                        if f == '':
-                            continue
-                        f_idx = terminals.index(f)
-                        if t[0] in terminals:
-                            if t[0] == terminals[f_idx]:
-                                table[k_idx][f_idx] = t
-                        else:
+                    if t[0] in terminals:
+                        f_idx = terminals.index(t[0])
+                        table[k_idx][f_idx] = t
+                    else:
+                        for f in self.first[k]:
+                            if f == '':
+                                continue
+                            f_idx = terminals.index(f)
                             table[k_idx][f_idx] = t
 
         return table
