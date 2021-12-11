@@ -8,6 +8,7 @@ class LLParser:
         self.grammar = self.parse_grammar(grammar_path)
         self.nonterminals = list(self.grammar.keys())
         self.terminals = self.get_terminals()
+        self.nullable = self.find_nullable()
         self.first = self.find_first()
         self.follow = self.find_follow()
         self.parsing_table = None
@@ -157,99 +158,173 @@ class LLParser:
                             terminal.append(j)
         return list(set(terminal))
 
-    def find_first(self):
-        first = {}
-        for k in self.nonterminals:
-            first[k] = set(self.calc_first(k))
-        return first
+    def find_nullable(self):
+        keys = self.nonterminals
+        grammar = self.grammar
+        nullable = {}
+        for i in range(len(keys)):
+            for j in range(len(grammar[keys[i]])):
+                for k in range(len(grammar[keys[i]][j])):
+                    if grammar[keys[i]][j][k] not in grammar:
+                        nullable[grammar[keys[i]][j][k]] = False
+        if '' in nullable:
+            nullable[''] = True
 
-    def calc_first(self, k):
-        first = []
-        if len(self.grammar[k]) == 1:
-            value = self.grammar[k][0]
-            if value[0] in self.terminals:
-                first.append(value[0])
-            else:
-                first.extend(self.calc_first(value[0]))
-        else:
-            for i in range(len(self.grammar[k])):
-                value = self.grammar[k][i][0]
-                if value in self.terminals:
-                    first.append(value)
-                else:
-                    first.extend(self.calc_first(value))
+        def calc_rec(key, path: list):
+            nonlocal nullable
+
+            if key in path:
+                return False
+            path.append(key)
+            if key in nullable:
+                return nullable[key]
+            for ii in range(len(grammar[key])):
+                jj = 0
+                while jj < len(grammar[key][ii]):
+                    if not calc_rec(grammar[key][ii][jj], path[:]):
+                        break
+                    jj = jj + 1
+                if jj == len(grammar[key][ii]):
+                    nullable[key] = True
+                    return True
+            nullable[key] = False
+            return False
+
+        for k in keys:
+            calc_rec(k, [])
+        return nullable
+
+    def find_first(self):
+        keys = self.nonterminals
+        grammar = self.grammar
+        nullable = self.nullable
+        finished = False
+        first = {}
+        for i in range(len(keys)):
+            for j in range(len(grammar[keys[i]])):
+                for k in range(len(grammar[keys[i]][j])):
+                    if grammar[keys[i]][j][k] not in grammar:
+                        first[grammar[keys[i]][j][k]] = [grammar[keys[i]][j][k]]
+
+        def calc_rec(key, path: list):
+            nonlocal finished
+
+            if key not in grammar:
+                return first[key]
+            if key in path:
+                return first[key]
+            path.append(key)
+            if key not in first:
+                first[key] = []
+                finished = False
+            for ii in range(len(grammar[key])):
+                jj = 0
+                while jj < len(grammar[key][ii]):
+                    f = calc_rec(grammar[key][ii][jj], path[:])
+                    for kk in range(len(f)):
+                        if f[kk] not in first[key] and f[kk] != '':
+                            first[key].append(f[kk])
+                            finished = False
+                    if not nullable[grammar[key][ii][jj]]:
+                        break
+                    jj = jj + 1
+                if jj == len(grammar[key][ii]):
+                    if '' not in first[key]:
+                        first[key].append('')
+            return first[key]
+
+        while not finished:
+            finished = True
+            for i in range(len(keys)):
+                calc_rec(keys[i], [])
+        for k in first.keys():
+            first[k].sort()
         return first
 
     def find_follow(self):
+        keys = self.nonterminals
+        grammar = self.grammar
+        nullable = self.nullable
+        first = self.first
+        finished = False
         follow = {}
-        for k in self.nonterminals:
-            follow[k] = set(self.calc_follow(k))
-        return follow
-
-    def calc_follow(self, target_key):
-        follow = []
-        if target_key == 'prog':
-            follow.append('$')
-
-        for key, value in self.grammar.items():
-            if len(value) == 1:
-                if target_key in value[0]:
-                    index = value[0].index(target_key)
-                    # not the last position
-                    if index != len(value[0]) - 1:
-                        if value[0][index + 1] in self.terminals:
-                            follow.append(value[0][index + 1])
-                        else:
-                            temp_first = self.first[value[0][index + 1]].copy()
-                            if '' not in temp_first:
-                                follow.extend(temp_first)
-                            else:
-                                temp_first.remove('')
-                                follow.extend(temp_first)
-                                follow.extend(self.calc_follow(key))
-                    # the last position
-                    else:
-                        if target_key != key:
-                            follow.extend(self.calc_follow(key))
-                        else:
-                            continue
-                else:
-                    continue
+        for i in range(len(keys)):
+            if i == 0:
+                follow[keys[i]] = ['$']
             else:
-                for i in range(len(value)):
-                    if target_key in value[i]:
-                        index = value[i].index(target_key)
-                        # not the last position
-                        if index != len(value[i]) - 1:
-                            if value[i][index + 1] in self.terminals:
-                                follow.append(value[i][index + 1])
-                            else:
-                                temp_first = self.first[value[i][index + 1]].copy()
-                                if '' not in temp_first:
-                                    follow.extend(temp_first)
-                                else:
-                                    temp_first.remove('')
-                                    follow.extend(temp_first)
-                                    follow.extend(self.calc_follow(key))
-                        # the last position
-                        else:
-                            if target_key != key:
-                                follow.extend(self.calc_follow(key))
-                            else:
-                                continue
-                    else:
-                        continue
+                follow[keys[i]] = []
+
+        def calc(key):
+            nonlocal finished
+
+            for ii in range(len(grammar[key])):
+                for jj in range(len(grammar[key][ii])):
+                    mid = grammar[key][ii][jj]
+                    if mid in grammar:
+                        kk = jj + 1
+                        while kk < len(grammar[key][ii]):
+                            f = first[grammar[key][ii][kk]]
+                            for ll in range(len(f)):
+                                if f[ll] != '' and f[ll] not in follow[mid]:
+                                    follow[mid].append(f[ll])
+                                    finished = False
+                            if not nullable[grammar[key][ii][kk]]:
+                                break
+                            kk = kk + 1
+                        if kk == len(grammar[key][ii]):
+                            for ll in range(len(follow[key])):
+                                if follow[key][ll] not in follow[mid]:
+                                    follow[mid].append(follow[key][ll])
+                                    finished = False
+
+        while not finished:
+            finished = True
+            for i in range(len(keys)):
+                calc(keys[i])
+        for k in keys:
+            follow[k].sort()
         return follow
+
+    # def calc_follow(self, k):
+    #     follow = []
+    #     if k == 'prog':
+    #         follow.append('$')
+    #
+    #     for kk, kv in self.grammar.items():
+    #         for i in range(len(kv)):
+    #             if k in kv[i]:
+    #                 idx = kv[i].index(k)
+    #                 if idx != len(kv[i]) - 1:
+    #                     if kv[i][idx + 1] in self.terminals:
+    #                         follow.append(kv[i][idx + 1])
+    #                     else:
+    #                         first = self.first[kv[i][idx + 1]].copy()
+    #                         if '' not in first:
+    #                             follow.extend(first)
+    #                         else:
+    #                             first.remove('')
+    #                             follow.extend(list(first) + self.calc_follow(kk))
+    #                 else:
+    #                     if k != kk:
+    #                         follow.extend(self.calc_follow(kk))
+    #                     else:
+    #                         continue
+    #             else:
+    #                 continue
+    #     return follow
 
     def print_first_follow(self):
+        first_len = 35
+        follow_len = 35
         print("==== FIRST & FOLLOW ====")
-        print(f"{'Symbol':<10} | {'First':<30} | {'Follow':<30}")
-        print(f"{'-' * 10} | {'-' * 30} | {'-' * 30}")
+        print(f"{'Symbol':<10} | {'Nullable':<10} | {'First':<{first_len}} | {'Follow':<{follow_len}}")
+        print(f"{'-' * 10} | {'-' * 10} | {'-' * first_len} | {'-' * follow_len}")
         for k in self.nonterminals:
             first = sorted(list(self.first[k]))
             for i in range(len(first)):
                 if first[i] == '':
                     first[i] = 'ϵ'
             follow = sorted(list(self.follow[k]))
-            print(f"{k:<10} | {', '.join(first):<30} | {', '.join(follow):<30}")
+            print(f"{k:<10} | {'True' if self.nullable[k] else 'False':<10} "
+                  f"| {', '.join(first):<{first_len}} | {', '.join(follow):<{follow_len}}")
         print()
