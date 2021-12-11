@@ -21,12 +21,12 @@ def main():
     # Syntax Analyzer (Parser)
     parser = Parser(scanner.tokens, GRAMMAR_PATH)
     parser.print_grammar()
+    parser.print_first_follow()
     # LL-Parser
-        # FIRST & FOLLOW 구하기
-        # make LL Grammar
-            # 모호성 해결
+        # make LL Grammar - 모호성 해결
             # left-factoring
             # left-recursion 제거
+        # FIRST & FOLLOW 구하기
         # parsing table 생성
         # AST 생성
 
