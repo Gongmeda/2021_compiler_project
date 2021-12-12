@@ -430,3 +430,4 @@ class LLParser:
         file.write("==== SYMBOL TABLE ====\n")
         for e in self.symbol_table:
             file.write("{ " + f"Type: {e[1]}, Name: {e[0]}, Scope: [{' < '.join(e[2])}" + "] }\n")
+        file.close()

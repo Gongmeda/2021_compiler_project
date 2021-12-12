@@ -103,3 +103,13 @@ class Node:
                 scope.pop()
             node = node.advance()
         return symbol_table
+
+    def search_inorder(self):
+        node = self
+        if node.children:
+            return node.children[0]
+        while node.parent is not None:
+            if node.index != len(node.parent.children) - 1:
+                return node.parent.children[node.index + 1]
+            node = node.parent
+        return None

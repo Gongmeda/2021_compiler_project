@@ -4,3 +4,4 @@ class Generator:
 
     def write_code(self, file):
         pass
+        file.close()

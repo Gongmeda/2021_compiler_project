@@ -29,7 +29,6 @@ def main():
 
     # Semantic Analyzer (Intermediate Code Generator)
     semantic = Semantic(parser.ast, parser.symbol_table)
-    semantic.print_ir()
 
     # Code Generator
     generator = Generator()
@@ -40,7 +39,8 @@ def main():
     parser.print_first_follow()
     parser.print_parsing_table()
     parser.print_ast()
-    # parser.write_symbol_table(open(f'./{sys.argv[1].split(".")[0]}.symbol', 'w'))
+    semantic.print_ir()
+    parser.write_symbol_table(open(f'./{sys.argv[1].split(".")[0]}.symbol', 'w'))
     # generator.write_code(open(f'./{sys.argv[1].split(".")[0]}.code', 'w'))
 
 
