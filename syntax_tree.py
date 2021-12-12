@@ -113,3 +113,51 @@ class Node:
                 return node.parent.children[node.index + 1]
             node = node.parent
         return None
+
+    def get_left(self):
+        node = self
+        while node.index == 0:
+            node = node.parent
+        return node.parent.children[node.index - 1]
+
+    def get_right(self):
+        node = self
+        while True:
+            if len(node.parent.children) > node.index + 1:
+                break
+            else:
+                node = node.parent
+        return node.parent.children[node.index + 1]
+
+    def get_bt(self):
+        operators = ["=", "+", "*", ">"]
+        q = []
+        root = None
+        q.extend(self.children)
+
+        while True:
+            node = q.pop(0)
+            if node.key in operators:
+                if root is None:
+                    if node.value:
+                        root = Node(node.value, node.parent, node.index, node.value)
+                    else:
+                        root = Node(node.key, node.parent, node.index, node.value)
+                if len(root.children) == 0:
+                    left = node.get_left()
+                    root.children.append(left.get_bt())
+                    right = node.get_right()
+                    root.children.append(right.get_bt())
+
+            else:
+                for gc in node.children:
+                    q.append(gc)
+
+            if len(q) == 0:
+                if root is None:
+                    if node.value:
+                        root = Node(node.value, node.parent, node.index, node.value)
+                    else:
+                        root = Node(node.key, node.parent, node.index, node.value)
+                break
+        return root

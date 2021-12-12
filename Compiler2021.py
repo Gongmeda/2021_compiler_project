@@ -31,7 +31,7 @@ def main():
     semantic = Semantic(parser.ast, parser.symbol_table)
 
     # Code Generator
-    generator = Generator()
+    generator = Generator(semantic.ir)
 
     # Print Output
     scanner.print_tokens()
@@ -41,7 +41,7 @@ def main():
     parser.print_ast()
     semantic.print_ir()
     parser.write_symbol_table(open(f'./{sys.argv[1].split(".")[0]}.symbol', 'w'))
-    # generator.write_code(open(f'./{sys.argv[1].split(".")[0]}.code', 'w'))
+    generator.write_code(open(f'./{sys.argv[1].split(".")[0]}.code', 'w'))
 
 
 if __name__ == '__main__':
