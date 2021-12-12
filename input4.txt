@@ -7,15 +7,7 @@ main() {
   bread = 1;
   chocolate = 100;
 
-  IF chocolate > apple + bread {
-    int dimsum;
-
-    dimsum = bread * bread;
-    apple = apple + dimsum;
-    bread = bread + 1;
-  }
-
-  IF apple > 100 THEN
+  IF apple < 100 THEN
   { apple = 100; }
   ELSE { EXIT 0; }
 }

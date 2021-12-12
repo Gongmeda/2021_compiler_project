@@ -20,9 +20,13 @@ def main():
 
     # Syntax Analyzer (Parser)
     parser = Parser(scanner.tokens, GRAMMAR_PATH)
+    if not parser.ast:
+        sys.exit("Parser Error: Unable To Parse Input")
     parser.print_grammar()
     parser.print_first_follow()
     parser.print_parsing_table()
+    parser.print_ast()
+
     # LL-Parser
         # make LL Grammar - 모호성 해결
             # left-factoring

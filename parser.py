@@ -1,10 +1,9 @@
 import sys
+from copy import deepcopy
+from tokentype import TokenType
 
 
 # LL(1) Parser
-from copy import deepcopy
-
-
 class LLParser:
     def __init__(self, tokens, grammar_path):
         self.tokens = tokens
@@ -15,6 +14,12 @@ class LLParser:
         self.first = self.find_first()
         self.follow = self.find_follow()
         self.parsing_table = self.create_parsing_table()
+        #
+        self.print_grammar()
+        self.print_first_follow()
+        self.print_parsing_table()
+        #
+        self.ast = self.parse()
 
     def parse_grammar(self, grammar_path):
         # 문법 파일 파싱
@@ -306,34 +311,42 @@ class LLParser:
         print()
 
     def create_parsing_table(self):
-        self.terminals.remove('')
+        if '' in self.terminals:
+            self.terminals.remove('')
         self.terminals.append('$')
         nonterminals = self.nonterminals
         terminals = self.terminals
         table = [[[] for j in range(len(terminals))] for i in range(len(nonterminals))]
 
-        for k, v in self.grammar.items():
-            k_idx = nonterminals.index(k)
-            for t in v:
-                # print(k, t)
-                if t == ['']:      # ε - check follow
-                    for f in self.follow[k]:
-                        table[k_idx][terminals.index(f)] = ['']
-                else:           # other - check first
-                    if t[0] in terminals:
-                        f_idx = terminals.index(t[0])
-                        table[k_idx][f_idx] = t
-                    else:
-                        for f in self.first[k]:
-                            if f == '':
-                                continue
-                            f_idx = terminals.index(f)
-                            table[k_idx][f_idx] = t
-
+        for row in range(len(nonterminals)):
+            key, value = nonterminals[row], self.grammar[nonterminals[row]]
+            for i in self.first[key]:
+                if i == '':
+                    for j in self.follow[key]:
+                        for col in range(len(terminals)):
+                            if j == terminals[col]:
+                                table[row][col] = ['']
+                                break
+                else:
+                    for col in range(len(terminals)):
+                        if i == terminals[col]:
+                            if len(value) == 1:
+                                table[row][col] = value[0]
+                            else:
+                                for a in range(len(value)):
+                                    if i in value[a]:
+                                        table[row][col] = value[a]
+                                        break
+                                    elif value[a][0] in nonterminals:
+                                        if i in self.first[value[a][0]]:
+                                            table[row][col] = value[a]
+                                            break
+                                    else:
+                                        continue
         return table
 
     def print_parsing_table(self):
-        trans_len = 20
+        trans_len = 30
         print("==== PARSING TABLE ====")
         print(f"{'':<10}", end='')
         for t in range(len(self.terminals)):
@@ -344,3 +357,63 @@ class LLParser:
             row = [f"{' '.join(self.parsing_table[n][t]) if self.parsing_table[n][t] != [''] else 'ε':<{trans_len}}" for t in range(len(self.terminals))]
             print(f"{self.nonterminals[n]:<10} | {' | '.join(row)}")
         print()
+
+    def parse(self):
+        terminals = self.terminals
+        nonterminals = self.nonterminals
+        tokens = self.tokens + [(TokenType.NULL, '$')]
+        failed = False
+
+        # init stack
+        stack = ['$', nonterminals[0]]
+
+        # init ast
+        tree = ['']
+
+        while len(stack) > 1:
+            comp = stack.pop()
+            symbol = tokens[0]
+
+            if comp in terminals:
+                symbol_type: TokenType = symbol[0]
+                if symbol_type == TokenType.WORD and comp == "([a-z] | [A-Z])*":
+                    tokens.pop(0)
+                elif symbol_type == TokenType.NUMBER and comp == "[0-9]*":
+                    tokens.pop(0)
+                elif comp == symbol[1]:
+                    tokens.pop(0)
+
+                    # advance AST
+                    pass
+                else:
+                    failed = True
+                    break
+            else:   # comp not in terminals
+                row_idx = nonterminals.index(comp)
+                symbol_type: TokenType = symbol[0]
+                if symbol_type == TokenType.NUMBER:
+                    col_idx = terminals.index("[0-9]*")
+                elif symbol_type == TokenType.WORD:
+                    col_idx = terminals.index("([a-z] | [A-Z])*")
+                else:
+                    col_idx = terminals.index(symbol[1])
+
+                push = self.parsing_table[row_idx][col_idx]
+                if push:
+                    if push != ['']:
+                        stack.extend(reversed(push))
+                        # set AST
+                        pass
+                    else:
+                        # set AST
+                        pass
+                else:
+                    failed = True
+                    break
+        if failed:
+            return None
+        else:
+            return tree
+
+    def print_ast(self):
+        pass

@@ -11,3 +11,4 @@ class TokenType(Enum):
     EXIT = auto()           # ['EXIT']
     WORD = auto()           # ([a-z] | [A-Z])*
     NUMBER = auto()         # [0-9]*
+    NULL = auto()           # $
