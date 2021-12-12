@@ -1,6 +1,7 @@
 import sys
 from copy import deepcopy
 from tokentype import TokenType
+from syntax_tree import Node
 
 
 # LL(1) Parser
@@ -14,12 +15,9 @@ class LLParser:
         self.first = self.find_first()
         self.follow = self.find_follow()
         self.parsing_table = self.create_parsing_table()
-        #
-        self.print_grammar()
-        self.print_first_follow()
-        self.print_parsing_table()
-        #
         self.ast = self.parse()
+        if not self.ast:
+            sys.exit("Parser Error: Unable To Parse Input")
 
     def parse_grammar(self, grammar_path):
         # 문법 파일 파싱
@@ -368,7 +366,7 @@ class LLParser:
         stack = ['$', nonterminals[0]]
 
         # init ast
-        tree = ['']
+        tree = Node(stack[-1], None, 0)
 
         while len(stack) > 1:
             comp = stack.pop()
@@ -378,13 +376,16 @@ class LLParser:
                 symbol_type: TokenType = symbol[0]
                 if symbol_type == TokenType.WORD and comp == "([a-z] | [A-Z])*":
                     tokens.pop(0)
+                    # advance AST
+                    tree = tree.advance()
                 elif symbol_type == TokenType.NUMBER and comp == "[0-9]*":
                     tokens.pop(0)
+                    # advance AST
+                    tree = tree.advance()
                 elif comp == symbol[1]:
                     tokens.pop(0)
-
                     # advance AST
-                    pass
+                    tree = tree.advance()
                 else:
                     failed = True
                     break
@@ -403,17 +404,21 @@ class LLParser:
                     if push != ['']:
                         stack.extend(reversed(push))
                         # set AST
-                        pass
+                        tree = tree.add_child(push)
                     else:
                         # set AST
-                        pass
+                        tree.add_child([''])
+                        tree = tree.advance()
                 else:
                     failed = True
                     break
         if failed:
             return None
         else:
+            tree = tree.get_root()
             return tree
 
     def print_ast(self):
-        pass
+        print("==== ABSTRACT SYNTAX TREE ====")
+        Node.print_tree(self.ast)
+        print()
