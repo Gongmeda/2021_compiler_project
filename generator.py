@@ -20,10 +20,10 @@ class Generator:
                     bt = c[1].get_bt()
                     bt.value = 1
                     self.count_register(bt)
-                    code.extend(self.w_code(c[0], bt))
+                    code.extend(self.write_code(c[0], bt))
         return code
 
-    def w_code(self, ir, node):
+    def write_code(self, ir, node):
         code = []
         nid = f"Reg#{node.value}"
 
@@ -34,8 +34,8 @@ class Generator:
             rid = f"Reg#{right.value}"
             if not left.children:
                 if node.key != "=":
-                    code.extend(self.w_code("", left))
-                code.extend(self.w_code("", right))
+                    code.extend(self.write_code("", left))
+                code.extend(self.write_code("", right))
 
                 if node.key == "+":
                     code.append(
@@ -53,7 +53,7 @@ class Generator:
                     code.append(
                         f"{' ' * self.prefix}{'JUMPT':<{self.width}} {nid:<{self.width}} {ir.split('goto')[-1][1:]:<{self.width}}")
             elif not right.children:
-                code.extend(self.w_code("", left))
+                code.extend(self.write_code("", left))
                 if node.key == "+":
                     code.append(
                         f"{' ' * self.prefix}{'ADD':<{self.width}} {nid:<{self.width}} {lid:<{self.width}} {rid:<{self.width}}")
@@ -68,10 +68,9 @@ class Generator:
                         f"{' ' * self.prefix}{'LT':<{self.width}} {nid:<{self.width}} {rid:<{self.width}} {lid:<{self.width}}")
                     code.append(
                         f"{' ' * self.prefix}{'JUMPT':<{self.width}} {nid:<{self.width}} {ir.split('goto')[-1][1:]:<{self.width}}")
-
             else:
-                code.extend(self.w_code("", left))
-                code.extend(self.w_code("", right))
+                code.extend(self.write_code("", left))
+                code.extend(self.write_code("", right))
                 if node.key == "+":
                     code.append(
                         f"{' ' * self.prefix}{'ADD':<{self.width}} {nid:<{self.width}} {lid:<{self.width}} {rid:<{self.width}}")
@@ -88,7 +87,7 @@ class Generator:
                         f"{' ' * self.prefix}{'JUMPT':<{self.width}} {nid:<{self.width}} {ir.split('goto')[-1][1:]:<{self.width}}")
         elif ir[:4] == "EXIT":
             code.append(
-                f"{' ' * self.prefix}{'LD':<{self.width}} {'rax':<{self.width}} {'-1':<{self.width}}")
+                f"{' ' * self.prefix}{'LD':<{self.width}} {'rax':<{self.width}} {ir.split()[1]:<{self.width}}")
         elif str(node.value).isdigit():
             code.append(
                 f"{' ' * self.prefix}{'LD':<{self.width}} {'Reg#'+str(node.value):<{self.width}} {node.key:<{self.width}}")
