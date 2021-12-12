@@ -18,6 +18,7 @@ class LLParser:
         self.ast = self.parse()
         if not self.ast:
             sys.exit("Parser Error: Unable To Parse Input")
+        self.symbol_table = self.ast.get_symbol_table()
 
     def parse_grammar(self, grammar_path):
         # 문법 파일 파싱
@@ -377,10 +378,12 @@ class LLParser:
                 if symbol_type == TokenType.WORD and comp == "([a-z] | [A-Z])*":
                     tokens.pop(0)
                     # advance AST
+                    tree.value = symbol[1]
                     tree = tree.advance()
                 elif symbol_type == TokenType.NUMBER and comp == "[0-9]*":
                     tokens.pop(0)
                     # advance AST
+                    tree.value = symbol[1]
                     tree = tree.advance()
                 elif comp == symbol[1]:
                     tokens.pop(0)
@@ -422,3 +425,8 @@ class LLParser:
         print("==== ABSTRACT SYNTAX TREE ====")
         Node.print_tree(self.ast)
         print()
+
+    def write_symbol_table(self, file):
+        file.write("==== SYMBOL TABLE ====\n")
+        for e in self.symbol_table:
+            file.write("{ " + f"Type: {e[1]}, Name: {e[0]}, Scope: [{' < '.join(e[2])}" + "] }\n")

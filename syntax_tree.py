@@ -1,12 +1,13 @@
 class Node:
-    def __init__(self, value, parent, index):
-        self.value = value
+    def __init__(self, key, parent, index, value=None):
+        self.key = key
         self.parent = parent
         self.children = []
         self.index = index
+        self.value = value
 
-    def add_child(self, values):
-        for idx, item in enumerate(values):
+    def add_child(self, keys):
+        for idx, item in enumerate(keys):
             node = Node(item, self, idx)
             self.children.append(node)
         return self.children[0]
@@ -47,7 +48,7 @@ class Node:
         """ Printing of "up" branch. """
         for child in up:
             next_last = 'up' if up.index(child) == 0 else ''
-            next_indent = '{0}{1}{2}'.format(indent, ' ' if 'up' in last else '│', " " * len(current_node.value))
+            next_indent = '{0}{1}{2}'.format(indent, ' ' if 'up' in last else '│', " " * len(current_node.key))
             Node.print_tree(child, indent=next_indent, last=next_last)
 
         """ Printing of current node. """
@@ -67,10 +68,38 @@ class Node:
         else:
             end_shape = ''
 
-        print('{0}{1}{2}{3}'.format(indent, start_shape, current_node.value if current_node.value != '' else 'ϵ', end_shape))
+        text = current_node.key if current_node.key != '' else 'ϵ'
+        if current_node.value:
+            text = f"\"{current_node.value}\""
+        print('{0}{1}{2}{3}'.format(indent, start_shape, text, end_shape))
 
         """ Printing of "down" branch. """
         for child in down:
             next_last = 'down' if down.index(child) is len(down) - 1 else ''
-            next_indent = '{0}{1}{2}'.format(indent, ' ' if 'down' in last else '│', " " * len(current_node.value))
+            next_indent = '{0}{1}{2}'.format(indent, ' ' if 'down' in last else '│', " " * len(current_node.key))
             Node.print_tree(child, indent=next_indent, last=next_last)
+
+    def get_symbol_table(self):
+        node = self.get_root()
+        scope = ["global"]
+        symbol_table = []
+        while node.children:
+            node = node.children[0]
+        symbol_table.append([node.value, "function", scope[:]])
+        scope.append(node.value)
+        node = node.advance()
+
+        while node.parent is not None:
+            if node.key in ["char", "int"]:
+                node_type = node.key
+                node = node.advance()
+                if node.key == "([a-z] | [A-Z])*":
+                    symbol_table.append([node.value, node_type, list(scope)])
+                    node = node.advance()
+                    continue
+            elif node.key in ["IF", "ELSE"]:
+                scope.append(node.key)
+            elif node.key == "}":
+                scope.pop()
+            node = node.advance()
+        return symbol_table
