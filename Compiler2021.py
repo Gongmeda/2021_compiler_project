@@ -1,6 +1,6 @@
 import sys
 from generator import Generator
-from parser import LLParser as Parser
+from llparser import LLParser as Parser
 from scanner import Scanner
 from semantic import Semantic
 
