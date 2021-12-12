@@ -1,5 +1,5 @@
 import sys
-
+from generator import Generator
 from parser import LLParser as Parser
 from scanner import Scanner
 from semantic import Semantic
@@ -17,7 +17,6 @@ def main():
 
     # Lexical analyzer (Scanner)
     scanner = Scanner(code)
-    scanner.print_tokens()
 
     # Syntax Analyzer (Parser)
     # LL-Parser
@@ -27,17 +26,22 @@ def main():
     # 4. AST 생성
     # 5. symbol table 생성
     parser = Parser(scanner.tokens, GRAMMAR_PATH)
+
+    # Semantic Analyzer (Intermediate Code Generator)
+    semantic = Semantic(parser.ast, parser.symbol_table)
+    semantic.print_ir()
+
+    # Code Generator
+    generator = Generator()
+
+    # Print Output
+    scanner.print_tokens()
     parser.print_grammar()
     parser.print_first_follow()
     parser.print_parsing_table()
     parser.print_ast()
-    parser.write_symbol_table(open(f'./{sys.argv[1].split(".")[0]}.symbol', 'w'))
-
-    # Semantic Analyzer
-    semantic = Semantic(parser.ast, parser.symbol_table)
-
-    # Intermediate Code Generator
-    # Code Generator
+    # parser.write_symbol_table(open(f'./{sys.argv[1].split(".")[0]}.symbol', 'w'))
+    # generator.write_code(open(f'./{sys.argv[1].split(".")[0]}.code', 'w'))
 
 
 if __name__ == '__main__':
