@@ -1,7 +1,7 @@
 prog    ::= word "(" ")" block ;
 decls   ::= decls decl | ;
 decl    ::= vtype word ";" ;
-vtype   ::= int | char | ;
+vtype   ::= int | char ;
 block   ::= "{" decls slist "}" | ;
 slist   ::= slist stat
         | stat ;
